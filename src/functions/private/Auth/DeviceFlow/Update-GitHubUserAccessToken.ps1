@@ -28,6 +28,7 @@
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
         [Parameter()]
+        [GitHubContextTransform()]
         [object] $Context = (Get-GitHubContext),
 
         # Return the new access token.
@@ -38,7 +39,6 @@
     begin {
         $stackPath = Get-PSCallStackPath
         Write-Debug "[$stackPath] - Start"
-        $Context = Resolve-GitHubContext -Context $Context
         Assert-GitHubContext -Context $Context -AuthType UAT
     }
 

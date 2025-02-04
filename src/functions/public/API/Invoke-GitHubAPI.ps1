@@ -79,13 +79,13 @@
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
         [Parameter()]
+        [GitHubContextTransform()]
         [object] $Context = (Get-GitHubContext)
     )
 
     begin {
         $stackPath = Get-PSCallStackPath
         Write-Debug "[$stackPath] - Start"
-        $Context = Resolve-GitHubContext -Context $Context
         Write-Debug 'Invoking GitHub API...'
         Write-Debug 'Parameters:'
         Get-FunctionParameter | Format-List | Out-String -Stream | ForEach-Object { Write-Debug $_ }
