@@ -19,8 +19,6 @@
     param(
         # The organization name. The name is not case sensitive.
         [Parameter(Mandatory)]
-        [Alias('org')]
-        [Alias('owner')]
         [Alias('login')]
         [string] $Organization,
 
@@ -31,9 +29,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -43,23 +40,19 @@
     }
 
     process {
-        try {
-            $body = @{
-                per_page = $PerPage
-            }
+        $body = @{
+            per_page = $PerPage
+        }
 
-            $inputObject = @{
-                Context     = $Context
-                APIEndpoint = "/orgs/$Organization/blocks"
-                Method      = 'GET'
-                Body        = $body
-            }
+        $inputObject = @{
+            Method      = 'GET'
+            APIEndpoint = "/orgs/$Organization/blocks"
+            Body        = $body
+            Context     = $Context
+        }
 
-            Invoke-GitHubAPI @inputObject | ForEach-Object {
-                Write-Output $_.Response
-            }
-        } catch {
-            throw $_
+        Invoke-GitHubAPI @inputObject | ForEach-Object {
+            Write-Output $_.Response
         }
     }
     end {

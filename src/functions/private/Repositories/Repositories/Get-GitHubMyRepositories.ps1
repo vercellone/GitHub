@@ -109,9 +109,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -121,41 +120,37 @@
     }
 
     process {
-        try {
-            $body = @{
-                sort      = $Sort
-                direction = $Direction
-                per_page  = $PerPage
+        $body = @{
+            sort      = $Sort
+            direction = $Direction
+            per_page  = $PerPage
+        }
+        if ($PSBoundParameters.ContainsKey('Since')) {
+            $body['since'] = $Since.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        }
+        if ($PSBoundParameters.ContainsKey('Before')) {
+            $body['before'] = $Before.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        }
+        Write-Debug "ParamSet: [$($PSCmdlet.ParameterSetName)]"
+        switch ($PSCmdlet.ParameterSetName) {
+            'Aff-Vis' {
+                $body['affiliation'] = $Affiliation -join ','
+                $body['visibility'] = $Visibility
             }
-            if ($PSBoundParameters.ContainsKey('Since')) {
-                $body['since'] = $Since.ToString('yyyy-MM-ddTHH:mm:ssZ')
+            'Type' {
+                $body['type'] = $Type
             }
-            if ($PSBoundParameters.ContainsKey('Before')) {
-                $body['before'] = $Before.ToString('yyyy-MM-ddTHH:mm:ssZ')
-            }
-            Write-Debug "ParamSet: [$($PSCmdlet.ParameterSetName)]"
-            switch ($PSCmdlet.ParameterSetName) {
-                'Aff-Vis' {
-                    $body['affiliation'] = $Affiliation -join ','
-                    $body['visibility'] = $Visibility
-                }
-                'Type' {
-                    $body['type'] = $Type
-                }
-            }
+        }
 
-            $inputObject = @{
-                Context     = $Context
-                APIEndpoint = '/user/repos'
-                Method      = 'GET'
-                body        = $body
-            }
+        $inputObject = @{
+            Method      = 'GET'
+            APIEndpoint = '/user/repos'
+            body        = $body
+            Context     = $Context
+        }
 
-            Invoke-GitHubAPI @inputObject | ForEach-Object {
-                Write-Output $_.Response
-            }
-        } catch {
-            throw $_
+        Invoke-GitHubAPI @inputObject | ForEach-Object {
+            Write-Output $_.Response
         }
     }
 

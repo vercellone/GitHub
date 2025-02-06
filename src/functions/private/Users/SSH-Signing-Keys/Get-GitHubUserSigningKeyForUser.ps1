@@ -23,6 +23,7 @@
             Mandatory,
             ValueFromPipelineByPropertyName
         )]
+        [Alias('login')]
         [string] $Username,
 
         # The number of results per page (max 100).
@@ -32,9 +33,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -44,23 +44,19 @@
     }
 
     process {
-        try {
-            $body = @{
-                per_page = $PerPage
-            }
+        $body = @{
+            per_page = $PerPage
+        }
 
-            $inputObject = @{
-                Context     = $Context
-                APIEndpoint = "/users/$Username/ssh_signing_keys"
-                Method      = 'GET'
-                Body        = $body
-            }
+        $inputObject = @{
+            Method      = 'GET'
+            APIEndpoint = "/users/$Username/ssh_signing_keys"
+            Body        = $body
+            Context     = $Context
+        }
 
-            Invoke-GitHubAPI @inputObject | ForEach-Object {
-                Write-Output $_.Response
-            }
-        } catch {
-            throw $_
+        Invoke-GitHubAPI @inputObject | ForEach-Object {
+            Write-Output $_.Response
         }
     }
 

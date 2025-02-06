@@ -34,9 +34,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -47,21 +46,12 @@
 
     process {
         $inputObject = @{
-            Context     = $Context
-            APIEndpoint = "/users/$Username/following/$Follows"
             Method      = 'GET'
+            APIEndpoint = "/users/$Username/following/$Follows"
+            Context     = $Context
         }
 
-        try {
-            $null = (Invoke-GitHubAPI @inputObject)
-            return $true
-        } catch {
-            if ($_.Exception.Response.StatusCode.Value__ -eq 404) {
-                return $false
-            } else {
-                throw $_
-            }
-        }
+        Invoke-GitHubAPI @inputObject
     }
 
     end {

@@ -29,9 +29,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -41,23 +40,13 @@
     }
 
     process {
-        try {
-            $inputObject = @{
-                Context     = $Context
-                APIEndpoint = "/user/blocks/$Username"
-                Method      = 'DELETE'
-            }
-
-            try {
-                $null = (Invoke-GitHubAPI @inputObject)
-                return $true
-            } catch {
-                Write-Error $_.Exception.Response
-                throw $_
-            }
-        } catch {
-            throw $_
+        $inputObject = @{
+            Method      = 'DELETE'
+            APIEndpoint = "/user/blocks/$Username"
+            Context     = $Context
         }
+
+        Invoke-GitHubAPI @inputObject
     }
 
     end {

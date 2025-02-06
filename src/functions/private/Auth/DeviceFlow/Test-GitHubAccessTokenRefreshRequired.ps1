@@ -16,9 +16,8 @@
     param(
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -27,14 +26,10 @@
     }
 
     process {
-        try {
-            $tokenExpirationDate = $Context.TokenExpirationDate
-            $currentDateTime = Get-Date
-            $remainingDuration = [datetime]$tokenExpirationDate - $currentDateTime
-            $remainingDuration.TotalHours -lt $script:GitHub.Config.AccessTokenGracePeriodInHours
-        } catch {
-            throw $_
-        }
+        $tokenExpirationDate = $Context.TokenExpirationDate
+        $currentDateTime = Get-Date
+        $remainingDuration = [datetime]$tokenExpirationDate - $currentDateTime
+        $remainingDuration.TotalHours -lt $script:GitHub.Config.AccessTokenGracePeriodInHours
     }
 
     end {

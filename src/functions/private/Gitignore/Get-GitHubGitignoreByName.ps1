@@ -23,9 +23,8 @@
 
         # The context to run the command in. Used to get the details for the API call.
         # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -35,19 +34,15 @@
     }
 
     process {
-        try {
-            $inputObject = @{
-                Context     = $Context
-                APIEndpoint = "/gitignore/templates/$Name"
-                Accept      = 'application/vnd.github.raw+json'
-                Method      = 'GET'
-            }
+        $inputObject = @{
+            Method      = 'GET'
+            APIEndpoint = "/gitignore/templates/$Name"
+            Accept      = 'application/vnd.github.raw+json'
+            Context     = $Context
+        }
 
-            Invoke-GitHubAPI @inputObject | ForEach-Object {
-                Write-Output $_.Response
-            }
-        } catch {
-            throw $_
+        Invoke-GitHubAPI @inputObject | ForEach-Object {
+            Write-Output $_.Response
         }
     }
 

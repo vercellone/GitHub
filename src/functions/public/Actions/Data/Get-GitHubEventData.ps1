@@ -1,13 +1,13 @@
-﻿function Get-GitHubRunnerData {
+﻿function Get-GitHubEventData {
     <#
         .SYNOPSIS
-        Gets data about the runner thats running the workflow.
+        Gets data about the event that triggered the workflow.
 
         .DESCRIPTION
-        Gets data about the runner thats running the workflow.
+        Gets data about the event that triggered the workflow.
 
         .EXAMPLE
-        Get-GitHubRunnerData
+        Get-GitHubEventData
     #>
     [OutputType([pscustomobject])]
     [CmdletBinding()]
@@ -19,11 +19,10 @@
     }
 
     process {
-        $script:GitHub.Runner
+        $script:GitHub.Event
     }
 
     end {
         Write-Debug "[$stackPath] - End"
     }
 }
-

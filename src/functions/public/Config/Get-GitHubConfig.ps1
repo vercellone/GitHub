@@ -1,6 +1,4 @@
-﻿#Requires -Modules @{ ModuleName = 'Context'; RequiredVersion = '6.0.0' }
-
-function Get-GitHubConfig {
+﻿function Get-GitHubConfig {
     <#
         .SYNOPSIS
         Get a GitHub module configuration.
@@ -28,15 +26,11 @@ function Get-GitHubConfig {
     }
 
     process {
-        try {
-            if (-not $Name) {
-                return [GitHubConfig]($script:GitHub.Config)
-            }
-
-            $script:GitHub.Config.$Name
-        } catch {
-            throw $_
+        if (-not $Name) {
+            return [GitHubConfig]($script:GitHub.Config)
         }
+
+        $script:GitHub.Config.$Name
     }
 
     end {

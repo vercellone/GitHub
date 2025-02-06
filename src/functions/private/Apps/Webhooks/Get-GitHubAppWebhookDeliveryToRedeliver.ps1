@@ -24,10 +24,8 @@
         [int] $PerPage,
 
         # The context to run the command in. Used to get the details for the API call.
-        # Can be either a string or a GitHubContext object.
-        [Parameter()]
-        [GitHubContextTransform()]
-        [object] $Context = (Get-GitHubContext)
+        [Parameter(Mandatory)]
+        [object] $Context
     )
 
     begin {
@@ -37,33 +35,29 @@
     }
 
     process {
-        try {
-            $checkPoint = (Get-Date).AddHours($TimeSpan)
-            Get-GitHubAppWebhookDeliveryByList -Context $Context -PerPage $PerPage | Where-Object { $_.DeliveredAt -gt $checkPoint } |
-                Group-Object -Property GUID | Where-Object { $_.Group.Status -notcontains 'OK' } | ForEach-Object {
-                    $refObject = $_.Group | Sort-Object -Property DeliveredAt
-                    [GitHubWebhookRedelivery]@{
-                        Attempts       = $_.Count
-                        GUID           = $_.Name
-                        Status         = $refObject.Status
-                        StatusCode     = $refObject.StatusCode
-                        Event          = $refObject.Event
-                        Action         = $refObject.Action
-                        Duration       = $_.Group.Duration | Measure-Object -Average | Select-Object -ExpandProperty Average
-                        ID             = $refObject.ID
-                        DeliveredAt    = $refObject.DeliveredAt
-                        Redelivery     = $refObject.Redelivery
-                        InstallationID = $refObject.InstallationID
-                        RepositoryID   = $refObject.RepositoryID
-                        ThrottledAt    = $refObject.ThrottledAt
-                        URL            = $refObject.URL
-                        Request        = $refObject.Request
-                        Response       = $refObject.Response
-                    }
+        $checkPoint = (Get-Date).AddHours($TimeSpan)
+        Get-GitHubAppWebhookDeliveryByList -Context $Context -PerPage $PerPage | Where-Object { $_.DeliveredAt -gt $checkPoint } |
+            Group-Object -Property GUID | Where-Object { $_.Group.Status -notcontains 'OK' } | ForEach-Object {
+                $refObject = $_.Group | Sort-Object -Property DeliveredAt
+                [GitHubWebhookRedelivery]@{
+                    Attempts       = $_.Count
+                    GUID           = $_.Name
+                    Status         = $refObject.Status
+                    StatusCode     = $refObject.StatusCode
+                    Event          = $refObject.Event
+                    Action         = $refObject.Action
+                    Duration       = $_.Group.Duration | Measure-Object -Average | Select-Object -ExpandProperty Average
+                    ID             = $refObject.ID
+                    DeliveredAt    = $refObject.DeliveredAt
+                    Redelivery     = $refObject.Redelivery
+                    InstallationID = $refObject.InstallationID
+                    RepositoryID   = $refObject.RepositoryID
+                    ThrottledAt    = $refObject.ThrottledAt
+                    URL            = $refObject.URL
+                    Request        = $refObject.Request
+                    Response       = $refObject.Response
                 }
-        } catch {
-            throw $_
-        }
+            }
     }
 
     end {

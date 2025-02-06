@@ -1,4 +1,6 @@
-﻿filter ConvertTo-HashTable {
+﻿#Requires -Modules @{ ModuleName = 'CasingStyle'; RequiredVersion = '1.0.2' }
+
+filter ConvertTo-HashTable {
     <#
         .SYNOPSIS
         Converts an object to a hashtable
@@ -65,15 +67,11 @@
     }
 
     process {
-        try {
-            foreach ($item in $InputObject.PSObject.Properties) {
-                $name = if ($NameCasingStyle) { ($item.Name | Convert-StringCasingStyle -To $NameCasingStyle) } else { $item.Name }
-                $hashtable[$name] = $item.Value
-            }
-            $hashtable
-        } catch {
-            throw $_
+        foreach ($item in $InputObject.PSObject.Properties) {
+            $name = if ($NameCasingStyle) { ($item.Name | ConvertTo-CasingStyle -To $NameCasingStyle) } else { $item.Name }
+            $hashtable[$name] = $item.Value
         }
+        $hashtable
     }
 
     end {
